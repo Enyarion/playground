@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-import os
+from traceback import format_exc
 
 from PyQt5 import QtWidgets
+from PyQt5.QtCore import QModelIndex
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QHeaderView
 from PyQt5.QtWidgets import QMainWindow
@@ -36,11 +36,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionAbout_Qt.triggered.connect(self.__actionAbout_Qt)
 
         self.fileSystemModel = QtWidgets.QFileSystemModel()
-        self.fileSystemModel.setRootPath(os.getcwd())
+        self.fileSystemModel.setRootPath('/')
         self.treeView.setModel(self.fileSystemModel)
         self.treeView.header().setStretchLastSection(True)
         self.treeView.header().setSectionResizeMode(0, QHeaderView.ResizeToContents | QHeaderView.Interactive)
-        self.treeView.setRootIndex(self.fileSystemModel.index(os.getcwd()))
+        self.treeView.setRootIndex(self.fileSystemModel.index('/'))
+        self.treeView.clicked.connect(self.treeView_clicked)
+
+    def treeView_clicked(self, index: QModelIndex):
+        self.statusbar.showMessage(self.fileSystemModel.filePath(index))
+        self.textEdit.setText('')
+        self.textEdit.horizontalScrollBar().setValue(0)
+        self.textEdit.verticalScrollBar().setValue(0)
+        try:
+            with open(self.fileSystemModel.filePath(index), 'r') as f_in:
+                self.textEdit.setText(f_in.read())
+        except Exception as e:
+            if isinstance(e, UnicodeDecodeError):
+                with open(self.fileSystemModel.filePath(index), 'rb') as f_in:
+                    self.textEdit.setText(''.join(chr(c) for c in f_in.read(4096)))
+            else:
+                self.textEdit.setText(format_exc())
 
     def __actionExit(self):
         self.close()
