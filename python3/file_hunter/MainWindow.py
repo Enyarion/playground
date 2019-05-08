@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import os
+
+from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QHeaderView
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtWidgets import QStyle
@@ -30,6 +34,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         x = QApplication.style().standardIcon(QStyle.SP_TitleBarMenuButton)
         self.actionAbout_Qt.setIcon(x)
         self.actionAbout_Qt.triggered.connect(self.__actionAbout_Qt)
+
+        self.fileSystemModel = QtWidgets.QFileSystemModel()
+        self.fileSystemModel.setRootPath(os.getcwd())
+        self.treeView.setModel(self.fileSystemModel)
+        self.treeView.header().setStretchLastSection(True)
+        self.treeView.header().setSectionResizeMode(0, QHeaderView.ResizeToContents | QHeaderView.Interactive)
+        self.treeView.setRootIndex(self.fileSystemModel.index(os.getcwd()))
 
     def __actionExit(self):
         self.close()
